@@ -177,6 +177,148 @@ app.post('/api/auth/login', (_req, res) => {
   }
 });
 
+// Demo stakeholder data
+const demoStakeholders = [
+  {
+    id: '1',
+    category: 'legal_team',
+    subcategory: 'erisa_specialists',
+    name: 'Sarah Mitchell',
+    organization: 'Mitchell & Associates',
+    title: 'Senior ERISA Attorney',
+    contactInfo: {
+      phone: '+1-555-0101',
+      email: 'sarah.mitchell@lawfirm.com',
+      address: '123 Legal Plaza, Washington DC 20001'
+    },
+    metadata: {
+      specialty: 'ERISA Fiduciary Breaches',
+      engagement_status: 'lead_counsel',
+      fee_structure: 'contingency_33_percent'
+    },
+    securityLevel: 'standard',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: '2',
+    category: 'government_entities',
+    subcategory: 'primary_targets',
+    name: 'Department of Labor - EBSA',
+    organization: 'U.S. Department of Labor',
+    title: 'Employee Benefits Security Administration',
+    contactInfo: {
+      phone: '+1-202-693-8300',
+      email: 'ebsa.enforcement@dol.gov',
+      address: '200 Constitution Ave NW, Washington DC 20210'
+    },
+    metadata: {
+      jurisdiction: 'federal',
+      contact_person: 'Agent Jennifer Chen',
+      damage_estimate: 25000000,
+      cooperation_level: 'high'
+    },
+    securityLevel: 'restricted',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: '3',
+    category: 'key_witnesses',
+    subcategory: 'primary_witnesses',
+    name: 'David Kim',
+    organization: 'Target Company Inc.',
+    title: 'Former CFO',
+    contactInfo: {
+      phone: '+1-555-0301',
+      email: 'dkim.secure@protonmail.com',
+      address: 'Protected location'
+    },
+    metadata: {
+      evidence_access: 'financial_records',
+      vulnerability_level: 'high',
+      protection_needed: 'witness_protection',
+      testimony_strength: 9
+    },
+    securityLevel: 'high',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+];
+
+// Stakeholder API endpoints
+app.get('/api/stakeholders', (_req, res) => {
+  const { category, search, page = 1, limit = 20 } = _req.query;
+  
+  let filtered = [...demoStakeholders];
+  
+  // Apply category filter
+  if (category) {
+    filtered = filtered.filter(s => s.category === category);
+  }
+  
+  // Apply search filter
+  if (search) {
+    const searchTerm = (search as string).toLowerCase();
+    filtered = filtered.filter(s => 
+      s.name.toLowerCase().includes(searchTerm) ||
+      s.organization.toLowerCase().includes(searchTerm) ||
+      s.title.toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  // Apply pagination
+  const startIndex = (Number(page) - 1) * Number(limit);
+  const paginatedResults = filtered.slice(startIndex, startIndex + Number(limit));
+  
+  res.json({
+    success: true,
+    data: paginatedResults,
+    pagination: {
+      page: Number(page),
+      limit: Number(limit),
+      total: filtered.length,
+      totalPages: Math.ceil(filtered.length / Number(limit))
+    },
+    timestamp: new Date()
+  });
+});
+
+app.get('/api/stakeholders/:id', (req, res) => {
+  const stakeholder = demoStakeholders.find(s => s.id === req.params.id);
+  
+  if (!stakeholder) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Stakeholder not found' },
+      timestamp: new Date()
+    });
+  }
+  
+  return res.json({
+    success: true,
+    data: stakeholder,
+    timestamp: new Date()
+  });
+});
+
+app.post('/api/stakeholders', (req, res) => {
+  const newStakeholder = {
+    id: String(demoStakeholders.length + 1),
+    ...req.body,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  };
+  
+  demoStakeholders.push(newStakeholder);
+  
+  res.status(201).json({
+    success: true,
+    data: { id: newStakeholder.id, message: 'Stakeholder created successfully' },
+    timestamp: new Date()
+  });
+});
+
 // Socket.IO real-time connections
 io.on('connection', (socket) => {
   console.log('🔌 User connected:', socket.id);

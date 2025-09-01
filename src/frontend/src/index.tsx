@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { LoginPage } from './components/auth/LoginPage';
 import { Dashboard } from './components/dashboard/Dashboard';
+import StakeholderDashboard from './components/stakeholders/StakeholderDashboard';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -43,6 +44,10 @@ const App: React.FC = () => {
   }
 
   // Route handling
+  if (currentPath === '/stakeholders' && isAuthenticated) {
+    return <StakeholderDashboard />;
+  }
+  
   if (currentPath === '/dashboard' || isAuthenticated) {
     return <Dashboard />;
   }

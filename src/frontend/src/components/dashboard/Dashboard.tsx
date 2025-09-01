@@ -81,6 +81,7 @@ export const Dashboard: React.FC<DashboardProps> = () => {
             title="Stakeholder Management"
             description="Track legal teams, witnesses, media contacts, and all case participants"
             status="Available"
+            onClick={() => window.location.href = '/stakeholders'}
           />
           <FeatureCard
             icon="📄"
@@ -141,14 +142,31 @@ interface FeatureCardProps {
   title: string;
   description: string;
   status: string;
+  onClick?: () => void;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, status }) => (
-  <div style={{
+const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, status, onClick }) => (
+  <div 
+    onClick={onClick}
+    style={{
     background: 'white',
     borderRadius: '8px',
     padding: '1.5rem',
-    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    cursor: onClick ? 'pointer' : 'default',
+    transition: 'transform 0.2s, box-shadow 0.2s'
+  }}
+  onMouseEnter={(e) => {
+    if (onClick) {
+      e.currentTarget.style.transform = 'translateY(-2px)';
+      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+    }
+  }}
+  onMouseLeave={(e) => {
+    if (onClick) {
+      e.currentTarget.style.transform = 'translateY(0)';
+      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+    }
   }}>
     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
       <span style={{ fontSize: '1.5rem', marginRight: '10px' }}>{icon}</span>
