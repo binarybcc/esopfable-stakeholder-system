@@ -1,0 +1,53 @@
+I need you to build a comprehensive case management system for a complex whistleblower/fraud case involving multiple stakeholders, legal proceedings, and public relations management. This system needs both internal coordination capabilities and external-facing components.
+
+## SYSTEM REQUIREMENTS
+
+### Core Functionality Needed:
+1. **Stakeholder/Contact Management** - Complex contact database with relationship tracking
+2. **Document Management** - Secure file storage with version control and access permissions  
+3. **Task/Timeline Management** - Multi-phase project tracking with dependencies
+4. **Communication Tracking** - Log all interactions, meetings, and correspondence
+5. **PR Message Management** - Consistent messaging across stakeholders with approval workflows
+6. **Evidence Preservation** - Secure documentation with chain of custody tracking
+7. **Risk Monitoring** - Track potential threats, retaliation, and evidence destruction
+
+### Technical Architecture:
+- **Internal System**: Full-featured web application for case team use
+- **External Portal**: Limited-access system for stakeholder communication
+- **Security**: Role-based access, encryption for sensitive documents
+- **Mobile Responsive**: Must work on phones/tablets for field access
+- **Backup/Recovery**: Automated backups with version history
+
+## STAKEHOLDER CATEGORIES & DATA STRUCTURE
+
+```json
+{
+  "stakeholder_categories": {
+    "legal_team": {
+      "fields": ["name", "firm", "specialty", "contact_info", "role", "engagement_status", "fee_structure"],
+      "subcategories": ["erisa_specialists", "fca_attorneys", "criminal_coordinators"]
+    },
+    "government_entities": {
+      "fields": ["jurisdiction", "contact_person", "title", "damage_estimate", "cooperation_level", "legal_counsel"],
+      "subcategories": ["primary_targets", "coalition_members", "potential_partners"]
+    },
+    "esop_participants": {
+      "fields": ["name", "years_service", "esop_stake", "contact_info", "sentiment", "leadership_role"],
+      "access_level": "restricted",
+      "communication_preferences": "group_vs_individual"
+    },
+    "key_witnesses": {
+      "fields": ["name", "role", "evidence_access", "vulnerability_level", "protection_needed", "testimony_strength"],
+      "security_level": "high",
+      "subcategories": ["primary_witnesses", "document_holders", "management_insiders"]
+    },
+    "media_contacts": {
+      "fields": ["name", "outlet", "beat", "relationship_quality", "reach", "editorial_stance"],
+      "subcategories": ["investigative", "business", "local", "trade_publications"]
+    },
+    "opposition": {
+      "fields": ["name", "role", "influence_level", "likely_response", "mitigation_strategy"],
+      "subcategories": ["jerry_allies", "board_members", "political_connections"]
+    }
+  }
+}

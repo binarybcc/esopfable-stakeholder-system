@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: case-management
+  labels:
+    app: case-management
+    environment: production
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: case-management-staging
+  labels:
+    app: case-management
+    environment: staging
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: case-management-dev
+  labels:
+    app: case-management
+    environment: development
