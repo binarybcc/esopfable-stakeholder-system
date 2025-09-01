@@ -1,0 +1,154 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: esopfable-postgres
+    environment:
+      POSTGRES_DB: esopfable
+      POSTGRES_USER: esopfable
+      POSTGRES_PASSWORD: esopfable123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - esopfable-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esopfable -d esopfable"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: esopfable-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - esopfable-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend API
+  api:
+    build:
+      context: .
+      dockerfile: devops/docker/Dockerfile.api
+    container_name: esopfable-api
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://esopfable:esopfable123@postgres:5432/esopfable
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-jwt-secret-change-in-production
+      ENCRYPTION_KEY: your-encryption-key-change-in-production
+      SESSION_SECRET: your-session-secret-change-in-production
+      CORS_ORIGIN: http://localhost:3000
+      UPLOAD_DIR: /app/uploads
+      MAX_FILE_SIZE: 52428800
+      VIRUS_SCAN_ENABLED: false
+      SWAGGER_ENABLED: true
+      LOG_LEVEL: debug
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - uploads_data:/app/uploads
+      - logs_data:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - esopfable-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Frontend Application
+  frontend:
+    build:
+      context: .
+      dockerfile: devops/docker/Dockerfile.frontend
+    container_name: esopfable-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:3001
+      REACT_APP_SOCKET_URL: http://localhost:3001
+      REACT_APP_ENCRYPTION_ENABLED: true
+      REACT_APP_ENVIRONMENT: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src/frontend:/app
+      - /app/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - esopfable-network
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: esopfable-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./devops/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./devops/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - api
+    networks:
+      - esopfable-network
+    profiles:
+      - production
+
+  # ClamAV Antivirus Scanner (Optional)
+  clamav:
+    image: clamav/clamav:stable
+    container_name: esopfable-clamav
+    volumes:
+      - clamav_data:/var/lib/clamav
+    networks:
+      - esopfable-network
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+  logs_data:
+    driver: local
+  nginx_logs:
+    driver: local
+  clamav_data:
+    driver: local
+
+networks:
+  esopfable-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
